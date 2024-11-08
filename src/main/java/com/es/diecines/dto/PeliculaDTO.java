@@ -11,6 +11,8 @@ public class PeliculaDTO {
     private String synopsis;
     private Double rating;
 
+    public PeliculaDTO() {
+    }
 
     public PeliculaDTO(Long id, String title, String director, String time, String trailer, String posterImage, String screenshot, String synopsis, Double rating) {
         this.id = id;
