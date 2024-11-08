@@ -5,6 +5,7 @@ package com.es.diecines.error;
  */
 public class ErrorGenerico {
 
+
     private String mensaje;
     private String uri;
 
@@ -31,4 +32,13 @@ public class ErrorGenerico {
     public void setUri(String uri) {
         this.uri = uri;
     }
+
+    @Override
+    public String toString() {
+        return "ErrorGenerico{" +
+                "mensaje='" + mensaje + '\'' +
+                ", uri='" + uri + '\'' +
+                '}';
+    }
+
 }

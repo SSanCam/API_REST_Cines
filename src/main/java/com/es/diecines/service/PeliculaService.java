@@ -1,6 +1,8 @@
 package com.es.diecines.service;
 
 import com.es.diecines.dto.PeliculaDTO;
+import com.es.diecines.error.BaseDeDatosException;
+import com.es.diecines.error.ErrorGenerico;
 import com.es.diecines.model.Pelicula;
 import com.es.diecines.repository.PeliculaRepository;
 import com.es.diecines.utils.Mapper;
@@ -51,8 +53,12 @@ public class PeliculaService {
             Pelicula pelicula = repository.findById(idL)
                     .orElseThrow(() -> new EntityNotFoundException("La pelicula con id " + id + " no existe."));
             return Mapper.mapToDTO(pelicula);
-        } catch (NumberFormatException | DuplicateKeyException e) {
-            throw new BackingStoreException("ID '" + id + "' erróneo");
+        } catch (NumberFormatException e) {
+            throw  new BackingStoreException("ID no válido: " + idL);
+        } catch (DuplicateKeyException | BaseDeDatosException e){
+            throw new BaseDeDatosException("Error al acceder a la base de datos");
+        } catch (Exception e) {
+            throw new BackingStoreException("Error inesperado con ID '" + id + "'");
         }
     }
 
@@ -66,6 +72,7 @@ public class PeliculaService {
 
         try {
             Long idL = Long.parseLong(id);
+
             Pelicula peliculaExt = repository.findById(idL)
                     .orElseThrow(() -> new EntityNotFoundException("La película con id " + id + " no se ha encontrado."));
 
@@ -78,14 +85,16 @@ public class PeliculaService {
             peliculaExt.setScreenshot(peliculaDTO.getScreenshot());
             peliculaExt.setSynopsis(peliculaDTO.getSynopsis());
             peliculaExt.setRating(peliculaDTO.getRating());
-            // Se guardan los datos en la base de datos
 
+            // Se guardan los datos en la base de datos
             repository.save(peliculaExt);
 
             return Mapper.mapToDTO(peliculaExt);
 
-        } catch (NumberFormatException e) {
+        } catch (BaseDeDatosException e) {
+
             throw new IllegalArgumentException("ID no válido: " + id);
+
         }
     }
 
