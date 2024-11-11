@@ -2,7 +2,6 @@ package com.es.diecines.service;
 
 import com.es.diecines.dto.PeliculaDTO;
 import com.es.diecines.error.BaseDeDatosException;
-import com.es.diecines.error.ErrorGenerico;
 import com.es.diecines.model.Pelicula;
 import com.es.diecines.repository.PeliculaRepository;
 import com.es.diecines.utils.Mapper;

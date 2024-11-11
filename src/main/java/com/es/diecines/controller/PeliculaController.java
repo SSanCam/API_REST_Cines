@@ -51,10 +51,7 @@ public class PeliculaController {
      * @return Info de la película
      */
     @GetMapping("/{id}")
-    public ResponseEntity<?> getById(
-            @PathVariable String id
-    ) throws BackingStoreException {
-
+    public ResponseEntity<?> getById(@PathVariable String id) throws BackingStoreException {
         try {
             // Comprobar que el id no viene vacio
             if (id == null || id.isEmpty()) return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
