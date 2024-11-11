@@ -92,24 +92,27 @@ public class PeliculaService {
      */
     public PeliculaDTO modify(String id, PeliculaDTO peliculaDTO) {
         try {
-            Long idL = Long.parseLong(id);
 
-            Pelicula peliculaExt = repository
-                    .findById(idL)
-                    .orElseThrow(() -> new EntityNotFoundException("La película con id " + id + " no se ha encontrado."));
+            if (peliculaDTO != null) {
+                Long idL = Long.parseLong(id);
 
-            peliculaExt.setTitle(peliculaDTO.getTitle());
-            peliculaExt.setDirector(peliculaDTO.getDirector());
-            peliculaExt.setTime(peliculaDTO.getTime());
-            peliculaExt.setTrailer(peliculaDTO.getTrailer());
-            peliculaExt.setPosterImage(peliculaDTO.getPosterImage());
-            peliculaExt.setScreenshot(peliculaDTO.getScreenshot());
-            peliculaExt.setSynopsis(peliculaDTO.getSynopsis());
-            peliculaExt.setRating(peliculaDTO.getRating());
+                Pelicula peliculaExt = repository
+                        .findById(idL)
+                        .orElseThrow(() -> new EntityNotFoundException("La película con id " + id + " no se ha encontrado."));
 
-            repository.save(peliculaExt);
+                peliculaExt.setTitle(peliculaDTO.getTitle());
+                peliculaExt.setDirector(peliculaDTO.getDirector());
+                peliculaExt.setTime(peliculaDTO.getTime());
+                peliculaExt.setTrailer(peliculaDTO.getTrailer());
+                peliculaExt.setPosterImage(peliculaDTO.getPosterImage());
+                peliculaExt.setScreenshot(peliculaDTO.getScreenshot());
+                peliculaExt.setSynopsis(peliculaDTO.getSynopsis());
+                peliculaExt.setRating(peliculaDTO.getRating());
 
-            return Mapper.entityToDTO(peliculaExt);
+                repository.save(peliculaExt);
+
+                return Mapper.entityToDTO(peliculaExt);
+            }
 
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("ID no válido: " + id, e);
@@ -118,6 +121,7 @@ public class PeliculaService {
         } catch (Exception e) {
             throw new BaseDeDatosException("Error inesperado al actualizar la película en la base de datos", e);
         }
+        return null;
     }
 
 
@@ -159,12 +163,11 @@ public class PeliculaService {
     public List<PeliculaDTO> getAll() {
         try {
             List<Pelicula> listaPeliculas = repository.findAll();
-            List<PeliculaDTO> listaPeliculaDTO = new ArrayList<>();
+            List<PeliculaDTO> listaPeliculasDTO = new ArrayList<>();
 
-            for (Pelicula pelicula : listaPeliculas) {
-                listaPeliculaDTO.add(Mapper.entityToDTO(pelicula));
-            }
-            return listaPeliculaDTO;
+            listaPeliculas.forEach(pelicula -> listaPeliculasDTO.add(Mapper.entityToDTO(pelicula)));
+
+            return listaPeliculasDTO;
 
         } catch (Exception e) {
             throw new BaseDeDatosException("Error al obtener la lista de películas", e);
