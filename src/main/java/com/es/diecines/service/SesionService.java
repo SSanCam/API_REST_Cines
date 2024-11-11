@@ -76,6 +76,35 @@ public class SesionService {
     }
 
     /**
+     * READ
+     * Obtiene una sesión por su ID.
+     *
+     * @param id Identificador de la sesión en formato String.
+     * @return SesionDTO con la información de la sesión encontrada.
+     * @throws BaseDeDatosException     si ocurre un error al buscar en la base de datos.
+     * @throws IllegalArgumentException si el ID tiene un formato inválido.
+     * @throws EntityNotFoundException  si no se encuentra la sesión con el ID proporcionado.
+     */
+    public SesionDTO getById(String id) {
+        try {
+            Long idL = Long.parseLong(id);
+            Sesion sesion = sesionRepository
+                    .findById(idL)
+                    .orElseThrow(() -> new EntityNotFoundException("La sesión con id " + id + " no existe."));
+
+            return Mapper.entityToDTO(sesion);
+
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("ID no válido: " + id, e);
+        } catch (EntityNotFoundException e) {
+            throw new BaseDeDatosException("Error al buscar en la base de datos: Sesión no encontrada", e);
+        } catch (Exception e) {
+            throw new BaseDeDatosException("Error inesperado al buscar la sesión en la base de datos", e);
+        }
+    }
+
+
+    /**
      * UPDATE
      * Modifica un registro existente de una sesión.
      *

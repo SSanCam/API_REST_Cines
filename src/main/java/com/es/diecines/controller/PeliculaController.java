@@ -54,8 +54,10 @@ public class PeliculaController {
      * @param peliculaDTO Objeto PeliculaDTO con los datos de la película a crear.
      * @return ResponseEntity que contiene el objeto PeliculaDTO creado y el estado HTTP correspondiente.
      */
-    @PostMapping("/") // POST localhost:8080/pokemon/
-    public ResponseEntity<?> insert(@RequestBody PeliculaDTO peliculaDTO) {
+    @PostMapping("/")
+    public ResponseEntity<?> insert(
+            @RequestBody PeliculaDTO peliculaDTO
+    ) {
 
         if (peliculaDTO == null) {
             ErrorGenerico error = new ErrorGenerico(
@@ -75,6 +77,56 @@ public class PeliculaController {
             ErrorGenerico error = new ErrorGenerico("Error inesperado al crear la película", "localhost:8080/peliculas/");
             return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * READ
+     * Consulta una película por su ID.
+     * <p>
+     * Este método recibe un ID de película en la URL, verifica su validez y
+     * consulta en el servicio si existe una película con ese ID. En caso de que
+     * no exista o haya un error en la búsqueda, responde con un mensaje adecuado
+     * y el estado HTTP correspondiente.
+     *
+     * @param id Identificador de la película.
+     * @return ResponseEntity con el objeto PeliculaDTO si se encuentra, o con un objeto
+     * ErrorGenerico en caso de error o si no se encuentra la película.
+     * @throws BackingStoreException si el ID tiene un formato inválido.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getById(
+            @PathVariable String id
+    ) throws BackingStoreException {
+
+        if (id == null || id.isEmpty()) {
+            ErrorGenerico error = new ErrorGenerico("El ID de la película no puede estar vacío.", "localhost:8080/peliculas/" + id);
+            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            PeliculaDTO pelicula = peliculaService.getById(id);
+
+            if (pelicula == null) {
+                ErrorGenerico error = new ErrorGenerico(
+                        "Película no encontrada",
+                        "localhost:8080/peliculas/" + id
+                );
+                return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+            }
+
+            return new ResponseEntity<>(pelicula, HttpStatus.OK);
+
+        } catch (BaseDeDatosException e) {
+            ErrorGenerico error = new ErrorGenerico(
+                    e.getMessage(),
+                    "localhost:8080/peliculas/" + id
+            );
+            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+
+        } catch (BackingStoreException e) {
+            throw new BackingStoreException("Error inesperado con ID '" + id);
+        }
+
     }
 
     /**
@@ -130,53 +182,49 @@ public class PeliculaController {
         }
     }
 
-
     /**
-     * READ
-     * Consulta una película por su ID.
+     * DELETE
+     * Elimina una película existente de la base de datos.
      * <p>
-     * Este método recibe un ID de película en la URL, verifica su validez y
-     * consulta en el servicio si existe una película con ese ID. En caso de que
-     * no exista o haya un error en la búsqueda, responde con un mensaje adecuado
-     * y el estado HTTP correspondiente.
+     * Este método utiliza un DELETE -> @DeleteMapping y el recurso es `localhost:8080/peliculas/{id}`.
+     * Recibe el ID de la película a eliminar en la URL y verifica si esta existe en la base de datos.
+     * Si la película no se encuentra, responde con NOT_FOUND. Si el ID tiene un formato inválido,
+     * responde con BAD_REQUEST. En caso de error inesperado, responde con INTERNAL_SERVER_ERROR.
+     * </p>
      *
-     * @param id Identificador de la película.
-     * @return ResponseEntity con el objeto PeliculaDTO si se encuentra, o con un objeto
+     * @param id Identificador de la película que se va a eliminar.
+     * @return ResponseEntity con un mensaje de éxito si la película se elimina correctamente, o con un objeto
      * ErrorGenerico en caso de error o si no se encuentra la película.
-     * @throws BackingStoreException si el ID tiene un formato inválido.
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getById(@PathVariable String id) throws BackingStoreException {
-
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(
+            @PathVariable String id
+    ) {
         if (id == null || id.isEmpty()) {
-            ErrorGenerico error = new ErrorGenerico("el ID de la película no puede estar vacío.", "localhost:8080/peliculas/" + id);
+            ErrorGenerico error = new ErrorGenerico(
+                    "Id de película no válido.",
+                    "localhost:8080/peliculas/" + id
+            );
             return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
         }
 
         try {
-            PeliculaDTO pelicula = peliculaService.getById(id);
+            peliculaService.delete(id);
+            return new ResponseEntity<>("Película eliminada correctamente", HttpStatus.OK);
 
-            if (pelicula == null) {
-                ErrorGenerico error = new ErrorGenerico(
-                        "Película no encontrada",
-                        "localhost:8080/peliculas/" + id
-                );
-                return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
-            }
-
-            return new ResponseEntity<>(pelicula, HttpStatus.OK);
-
+        } catch (IllegalArgumentException e) {
+            ErrorGenerico error = new ErrorGenerico(
+                    e.getMessage(),
+                    "localhost:8080/peliculas" + id
+            );
+            return  new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
         } catch (BaseDeDatosException e) {
             ErrorGenerico error = new ErrorGenerico(
                     e.getMessage(),
-                    "localhost:8080/peliculas/" + id
+                    "localhost:8080/peliculas" + id
             );
             return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-
-        } catch (BackingStoreException e) {
-            throw new BackingStoreException("Error inesperado con ID '" + id + "'");
         }
-
     }
 
     /**
@@ -190,8 +238,8 @@ public class PeliculaController {
         try {
             List<PeliculaDTO> peliculas = peliculaService.getAll();
 
-            if (peliculas.isEmpty()){
-                return new ResponseEntity<>("Peliculas", HttpStatus.NO_CONTENT);
+            if (peliculas.isEmpty()) {
+                return new ResponseEntity<>("Peliculas no registradas.", HttpStatus.NO_CONTENT);
             } else {
                 return new ResponseEntity<>(peliculas, HttpStatus.OK);
             }
@@ -202,7 +250,7 @@ public class PeliculaController {
                     "localhost:8080/peliculas/"
             );
             return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-        } catch (Exception e){
+        } catch (Exception e) {
             ErrorGenerico error = new ErrorGenerico(
                     "Error inesperado al obtener la lista de películas.",
                     "localhost:8080/peliculas/"

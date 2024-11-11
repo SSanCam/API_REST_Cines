@@ -70,6 +70,7 @@ public class PeliculaService {
                     .findById(idL)
                     .orElseThrow(() -> new EntityNotFoundException("La pelicula con id " + id + " no existe."));
             return Mapper.entityToDTO(pelicula);
+
         } catch (NumberFormatException e) {
             throw new BackingStoreException("ID no válido: " + id);
         } catch (EntityNotFoundException e) {
